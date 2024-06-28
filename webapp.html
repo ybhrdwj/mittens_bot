@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mittens Bot</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #0088cc;
+        }
+        .goal-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .goal-item {
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .goal-name {
+            font-weight: bold;
+        }
+        .goal-progress {
+            margin-top: 5px;
+        }
+        .log-button {
+            background-color: #0088cc;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mittens Bot</h1>
+        <div id="goals-container"></div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+
+        fetch('/get_goals?user_id=' + tg.initDataUnsafe.user.id)
+            .then(response => response.json())
+            .then(goals => {
+                const goalsContainer = document.getElementById('goals-container');
+                const goalList = document.createElement('ul');
+                goalList.className = 'goal-list';
+
+                goals.forEach(goal => {
+                    const goalItem = document.createElement('li');
+                    goalItem.className = 'goal-item';
+                    goalItem.innerHTML = `
+                        <div class="goal-name">${goal.name}</div>
+                        <div class="goal-progress">Progress: ${goal.frequency_done}/${goal.frequency_aimed}</div>
+                        <button class="log-button" onclick="logGoal(${goal.id})">Log Progress</button>
+                    `;
+                    goalList.appendChild(goalItem);
+                });
+
+                goalsContainer.appendChild(goalList);
+            });
+
+        function logGoal(goalId) {
+            tg.sendData(JSON.stringify({action: 'log_goal', goal_id: goalId}));
+        }
+    </script>
+</body>
+</html>
